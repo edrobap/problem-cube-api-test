@@ -7,9 +7,12 @@ import json
 HOST = '127.0.0.1'
 PORT = '3000'
 
-debug = False
+debug = True
+
+suffix = ''
 
 list_key = None
+
 
 def request_resource(url, method='GET', requestData=None):
     if debug:
@@ -56,8 +59,8 @@ def check(response, code):
         print "failed"
 
 
-def check_list(type, user_id, id_list, key=None):
-    obj = check(*request_resource(server + 'user/' + str(user_id) + '/' + type))
+def check_list(resource, user_id, id_list, key=None):
+    obj = check(*request_resource(server + 'user/' + str(user_id) + '/' + resource))
     if key:
         l = obj[key]
     else:
@@ -67,23 +70,27 @@ def check_list(type, user_id, id_list, key=None):
     return len([i for i in id_list if i not in id_list2]) == 0
 
 
-user1 = {"name": "a", "city": "abad"}
-user2 = {"name": "b", "city": "bad"}
-
-cube1 = {"name": "c1"}
-
-content1 = {"link": "http://cubeit.io/"}
-content2 = {"link": "http://www.google.com/"}
-
 if __name__ == '__main__':
     if len(sys.argv) > 1:
         HOST = sys.argv[1]
     if len(sys.argv) > 2:
         PORT = sys.argv[2]
     if len(sys.argv) > 3:
-        list_key = sys.argv[3]
+        debug = sys.argv[3] == 'y'
+    if len(sys.argv) > 4:
+        suffix = sys.argv[4]
+    if len(sys.argv) > 5:
+        list_key = sys.argv[5]
 
     server = 'http://' + HOST + ':' + PORT + '/'
+
+    user1 = {"name": "a" + suffix, "city": "abad" + suffix}
+    user2 = {"name": "b" + suffix, "city": "bad" + suffix}
+
+    cube1 = {"name": "c1" + suffix}
+
+    content1 = {"link": "http://cubeit" + suffix + ".io/"}
+    content2 = {"link": "http://www.google" + suffix + ".com/"}
 
     user1 = check(*request_resource(server + 'user/', 'POST', json.dumps(user1)))
     user2 = check(*request_resource(server + 'user/', 'POST', json.dumps(user2)))
@@ -128,8 +135,9 @@ if __name__ == '__main__':
     # action: create content2 by user1 and add it to cube1
     # check: content1 and content2 is in content list of user1 and user2
     content2 = check(*request_resource(server + 'user/' + str(user1['id']) + '/content/', 'POST', json.dumps(content2)))
-    add_content2 = check(*request_resource(server + 'user/' + str(user1['id']) + '/cube/' + str(cube1['id']) + '/content',
-                                           'POST', json.dumps({"content_id": content2['id']})))
+    add_content2 = check(
+        *request_resource(server + 'user/' + str(user1['id']) + '/cube/' + str(cube1['id']) + '/content',
+                          'POST', json.dumps({"content_id": content2['id']})))
     print check_list('content', user1['id'], [content1['id'], content2['id']], list_key), ''
     print check_list('content', user2['id'], [content1['id'], content2['id']], list_key), ''
     print '\n' * 2
