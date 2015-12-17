@@ -9,6 +9,7 @@ PORT = '3000'
 
 debug = False
 
+list_key = None
 
 def request_resource(url, method='GET', requestData=None):
     if debug:
@@ -74,80 +75,87 @@ cube1 = {"name": "c1"}
 content1 = {"link": "http://cubeit.io/"}
 content2 = {"link": "http://www.google.com/"}
 
-server = 'http://' + HOST + ':' + PORT + '/'
-key = None
+if __name__ == '__main__':
+    if len(sys.argv) > 1:
+        HOST = sys.argv[1]
+    if len(sys.argv) > 2:
+        PORT = sys.argv[2]
+    if len(sys.argv) > 3:
+        list_key = sys.argv[3]
 
-user1 = check(*request_resource(server + 'user/', 'POST', json.dumps(user1)))
-user2 = check(*request_resource(server + 'user/', 'POST', json.dumps(user2)))
-if debug: print user1, user2
+    server = 'http://' + HOST + ':' + PORT + '/'
 
-# TC 1
-# action: create cube1 by user1
-# check: cube1 is in cube list of user1
-cube1 = check(*request_resource(server + 'user/' + str(user1['id']) + '/cube/', 'POST', json.dumps(cube1)))
-if debug: print cube1
-print check_list('cube', user1['id'], [cube1['id']], key), ''
-print '\n' * 2
+    user1 = check(*request_resource(server + 'user/', 'POST', json.dumps(user1)))
+    user2 = check(*request_resource(server + 'user/', 'POST', json.dumps(user2)))
+    if debug: print user1, user2
 
-# TC 2
-# action: share cube1 with user2
-# check: cube1 is in cube list of user2
-share_cube1 = check(*request_resource(server + 'user/' + str(user1['id']) + '/cube/' + str(cube1['id']) + '/share/',
-                                      'POST', json.dumps({"user_id": user2['id']})))
-if debug: print share_cube1
-print check_list('cube', user2['id'], [cube1['id']], key), ''
-print '\n' * 2
+    # TC 1
+    # action: create cube1 by user1
+    # check: cube1 is in cube list of user1
+    cube1 = check(*request_resource(server + 'user/' + str(user1['id']) + '/cube/', 'POST', json.dumps(cube1)))
+    if debug: print cube1
+    print check_list('cube', user1['id'], [cube1['id']], list_key), ''
+    print '\n' * 2
 
-# TC 3
-# action: create content1 by user1
-# check: content1 is in content list of user1
-content1 = check(*request_resource(server + 'user/' + str(user1['id']) + '/content/', 'POST', json.dumps(content1)))
-if debug: print content1
-print check_list('cube', user1['id'], [cube1['id']], key), ''
-print '\n' * 2
+    # TC 2
+    # action: share cube1 with user2
+    # check: cube1 is in cube list of user2
+    share_cube1 = check(*request_resource(server + 'user/' + str(user1['id']) + '/cube/' + str(cube1['id']) + '/share/',
+                                          'POST', json.dumps({"user_id": user2['id']})))
+    if debug: print share_cube1
+    print check_list('cube', user2['id'], [cube1['id']], list_key), ''
+    print '\n' * 2
 
-# TC 4
-# action: share content1 with user2
-# check: content2 is in content list of user2
-share_content1 = check(
-    *request_resource(server + 'user/' + str(user1['id']) + '/content/' + str(content1['id']) + '/share/',
-                      'POST', json.dumps({"user_id": user2['id']})))
-if debug: print share_content1
-print check_list('content', user2['id'], [content1['id']], key), ''
-print '\n' * 2
+    # TC 3
+    # action: create content1 by user1
+    # check: content1 is in content list of user1
+    content1 = check(*request_resource(server + 'user/' + str(user1['id']) + '/content/', 'POST', json.dumps(content1)))
+    if debug: print content1
+    print check_list('cube', user1['id'], [cube1['id']], list_key), ''
+    print '\n' * 2
 
-# TC 5
-# action: create content2 by user1 and add it to cube1
-# check: content1 and content2 is in content list of user1 and user2
-content2 = check(*request_resource(server + 'user/' + str(user1['id']) + '/content/', 'POST', json.dumps(content2)))
-add_content2 = check(*request_resource(server + 'user/' + str(user1['id']) + '/cube/' + str(cube1['id']) + '/content',
-                                       'POST', json.dumps({"content_id": content2['id']})))
-print check_list('content', user1['id'], [content1['id'], content2['id']], key), ''
-print check_list('content', user2['id'], [content1['id'], content2['id']], key), ''
-print '\n' * 2
+    # TC 4
+    # action: share content1 with user2
+    # check: content2 is in content list of user2
+    share_content1 = check(
+        *request_resource(server + 'user/' + str(user1['id']) + '/content/' + str(content1['id']) + '/share/',
+                          'POST', json.dumps({"user_id": user2['id']})))
+    if debug: print share_content1
+    print check_list('content', user2['id'], [content1['id']], list_key), ''
+    print '\n' * 2
 
-# TC 6
-# action: delete content2 by user2
-# check: content1 and content2 is in content list of user1 and only content1 is in content list of user2
-delete_content2 = check(*request_resource(
-    server + 'user/' + str(user2['id']) + '/cube/' + str(cube1['id']) + '/content/' + str(content2['id']),
-    'DELETE'))
-print check_list('content', user1['id'], [content1['id'], content2['id']], key), ''
-print check_list('content', user2['id'], [content1['id']], key), ''
-print '\n' * 2
+    # TC 5
+    # action: create content2 by user1 and add it to cube1
+    # check: content1 and content2 is in content list of user1 and user2
+    content2 = check(*request_resource(server + 'user/' + str(user1['id']) + '/content/', 'POST', json.dumps(content2)))
+    add_content2 = check(*request_resource(server + 'user/' + str(user1['id']) + '/cube/' + str(cube1['id']) + '/content',
+                                           'POST', json.dumps({"content_id": content2['id']})))
+    print check_list('content', user1['id'], [content1['id'], content2['id']], list_key), ''
+    print check_list('content', user2['id'], [content1['id'], content2['id']], list_key), ''
+    print '\n' * 2
 
-# TC 7
-# action: delete cube1 by user2
-# check: cube list of user1 and user2 are empty
-delete_cube1 = check(*request_resource(server + 'user/' + str(user2['id']) + '/cube/' + str(cube1['id']),
-                                       'DELETE'))
-print check_list('cube', user1['id'], [], key), ''
-print check_list('cube', user2['id'], [], key), ''
-print '\n' * 2
+    # TC 6
+    # action: delete content2 by user2
+    # check: content1 and content2 is in content list of user1 and only content1 is in content list of user2
+    delete_content2 = check(*request_resource(
+        server + 'user/' + str(user2['id']) + '/cube/' + str(cube1['id']) + '/content/' + str(content2['id']),
+        'DELETE'))
+    print check_list('content', user1['id'], [content1['id'], content2['id']], list_key), ''
+    print check_list('content', user2['id'], [content1['id']], list_key), ''
+    print '\n' * 2
 
-# TC 8
-# action: delete all cubes (already taken in TC 7)
-# check: content1 and content2 is in content list of user1 and only content1 is in content list of user2
-print check_list('content', user1['id'], [content1['id'], content2['id']], key), ''
-print check_list('content', user2['id'], [content1['id']], key), ''
-print '\n' * 2
+    # TC 7
+    # action: delete cube1 by user2
+    # check: cube list of user1 and user2 are empty
+    delete_cube1 = check(*request_resource(server + 'user/' + str(user2['id']) + '/cube/' + str(cube1['id']),
+                                           'DELETE'))
+    print check_list('cube', user1['id'], [], list_key), ''
+    print check_list('cube', user2['id'], [], list_key), ''
+    print '\n' * 2
+
+    # TC 8
+    # action: delete all cubes (already taken in TC 7)
+    # check: content1 and content2 is in content list of user1 and only content1 is in content list of user2
+    print check_list('content', user1['id'], [content1['id'], content2['id']], list_key), ''
+    print check_list('content', user2['id'], [content1['id']], list_key), ''
+    print '\n' * 2
