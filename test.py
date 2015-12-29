@@ -60,7 +60,7 @@ def check(response, code):
 
 
 def check_list(resource, user_id, id_list, key=None):
-    obj = check(*request_resource(server + 'user/' + str(user_id) + '/' + resource))
+    obj = check(*request_resource(server + 'user/' + str(user_id) + '/' + resource + '/'))
     if key:
         l = obj[key]
     else:
@@ -136,7 +136,7 @@ if __name__ == '__main__':
     # check: content1 and content2 is in content list of user1 and user2
     content2 = check(*request_resource(server + 'user/' + str(user1['id']) + '/content/', 'POST', json.dumps(content2)))
     add_content2 = check(
-        *request_resource(server + 'user/' + str(user1['id']) + '/cube/' + str(cube1['id']) + '/content',
+        *request_resource(server + 'user/' + str(user1['id']) + '/cube/' + str(cube1['id']) + '/content/',
                           'POST', json.dumps({"content_id": content2['id']})))
     print check_list('content', user1['id'], [content1['id'], content2['id']], list_key), ''
     print check_list('content', user2['id'], [content1['id'], content2['id']], list_key), ''
@@ -146,7 +146,7 @@ if __name__ == '__main__':
     # action: delete content2 by user2
     # check: content1 and content2 is in content list of user1 and only content1 is in content list of user2
     delete_content2 = check(*request_resource(
-        server + 'user/' + str(user2['id']) + '/cube/' + str(cube1['id']) + '/content/' + str(content2['id']),
+        server + 'user/' + str(user2['id']) + '/cube/' + str(cube1['id']) + '/content/' + str(content2['id']) + '/',
         'DELETE'))
     print check_list('content', user1['id'], [content1['id'], content2['id']], list_key), ''
     print check_list('content', user2['id'], [content1['id']], list_key), ''
@@ -155,7 +155,7 @@ if __name__ == '__main__':
     # TC 7
     # action: delete cube1 by user2
     # check: cube list of user1 and user2 are empty
-    delete_cube1 = check(*request_resource(server + 'user/' + str(user2['id']) + '/cube/' + str(cube1['id']),
+    delete_cube1 = check(*request_resource(server + 'user/' + str(user2['id']) + '/cube/' + str(cube1['id']) + '/',
                                            'DELETE'))
     print check_list('cube', user1['id'], [], list_key), ''
     print check_list('cube', user2['id'], [], list_key), ''
